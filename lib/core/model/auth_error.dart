@@ -11,11 +11,11 @@ class AuthError {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
+    final Map<String, dynamic> data = <String, dynamic>{};
     if(error != null) {
-      _data["error"] = error?.toJson();
+      data["error"] = error?.toJson();
     }
-    return _data;
+    return data;
   }
 }
 
@@ -39,13 +39,13 @@ class Error {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["code"] = code;
-    _data["message"] = message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["code"] = code;
+    data["message"] = message;
     if(errors != null) {
-      _data["errors"] = errors?.map((e) => e.toJson()).toList();
+      data["errors"] = errors?.map((e) => e.toJson()).toList();
     }
-    return _data;
+    return data;
   }
 }
 
@@ -69,10 +69,10 @@ class Errors {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["message"] = message;
-    _data["domain"] = domain;
-    _data["reason"] = reason;
-    return _data;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["message"] = message;
+    data["domain"] = domain;
+    data["reason"] = reason;
+    return data;
   }
 }

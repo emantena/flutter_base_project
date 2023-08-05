@@ -9,6 +9,6 @@ class SignInController extends BaseController {
     required String email,
     required String password,
   }) async {
-    var result = await _authService.signIn(email: email, password: password);
+    await _authService.signIn(email: email, password: password);
   }
 }

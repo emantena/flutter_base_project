@@ -3,7 +3,6 @@
 import 'package:base_project/app/pages/sign_up/sign_up_controller.dart';
 import 'package:base_project/app/theme/app_collor.dart';
 import 'package:base_project/app/utils/size_config.dart';
-import 'package:base_project/app/utils/validator.dart';
 import 'package:base_project/app/widget/buttons/back_button_widget.dart';
 import 'package:base_project/app/widget/buttons/default_button_widget.dart';
 import 'package:base_project/app/widget/headers/header_text.dart';
@@ -88,7 +87,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
                       LoadingOverlayWidget.of(context).showLoader();
 
-                      final result = await _controller.createUser(
+                      await _controller.createUser(
                         email: _emailController.text,
                         name: _nameController.text,
                         password: _passwordController.text,

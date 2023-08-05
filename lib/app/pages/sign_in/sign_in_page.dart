@@ -89,7 +89,7 @@ class _SignInPageState extends State<SignInPage> {
 
                             LoadingOverlayWidget.of(context).showLoader();
 
-                            final result = await _controller.login(
+                            await _controller.login(
                               email: _emailController.text,
                               password: _passwordController.text,
                             );

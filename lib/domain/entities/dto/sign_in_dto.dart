@@ -19,10 +19,10 @@ class SignInDto {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["email"] = email;
-    _data["password"] = password;
-    _data["returnSecureToken"] = returnSecureToken;
-    return _data;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["email"] = email;
+    data["password"] = password;
+    data["returnSecureToken"] = returnSecureToken;
+    return data;
   }
 }

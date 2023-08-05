@@ -27,7 +27,7 @@ class UserRepository implements IUserRepository {
       );
 
       return Result.success(User.fromJson(json));
-    } on Failure catch (e) {
+    } on Failure {
       return Result.failure(
         Failure.fromMessage(
           message: "falha ao cadastrar usuário",
@@ -49,7 +49,7 @@ class UserRepository implements IUserRepository {
       );
 
       return Result.success(AuthUserResponseDto.fromJson(json));
-    } on Failure catch (e) {
+    } on Failure {
       return Result.failure(
         Failure.fromMessage(
           message: "Login ou senha inválido",
