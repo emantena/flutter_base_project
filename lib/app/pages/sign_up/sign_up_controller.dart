@@ -7,7 +7,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 class SignUpController extends BaseController {
   final _signUpService = Modular.get<ISignUpService>();
 
-  Future<bool> createUser({
+  Future createUser({
     required String name,
     required String email,
     required String password,
@@ -24,8 +24,8 @@ class SignUpController extends BaseController {
       createUserDto: createUserDto,
     );
 
-    update(hasError: result == ResultStatus.error);
-
-    return result == ResultStatus.success;
+    update(
+        hasError: result == ResultStatus.error,
+        errorMessage: "Falha ao criar novo\nusuario");
   }
 }

@@ -1,6 +1,7 @@
 import 'package:base_project/app/pages/sign_in/sign_in_page.dart';
 import 'package:base_project/app/pages/sign_up/sign_up_page.dart';
 import 'package:base_project/app/pages/splash_page.dart';
+import 'package:base_project/app/widget/loading_overlay_widget.dart';
 import 'package:base_project/core/interfaces/i_api_service.dart';
 import 'package:base_project/core/services/api_service.dart';
 import 'package:base_project/data/sign_up_repository.dart';
@@ -22,7 +23,7 @@ class AppModule extends Module {
         //Services
         Bind.factory<IApiService>((i) => ApiService()),
         Bind.factory<ISignUpService>((i) => SignUpService(i(), i())),
-        Bind.factory<IAuthService>((i) => AuthService()),
+        Bind.factory<IAuthService>((i) => AuthService(i())),
         //Repository
         Bind.factory<ISignUpRepository>((i) => SignUpRepository(i())),
         Bind.factory<IUserRepository>((i) => UserRepository(i())),
@@ -31,7 +32,11 @@ class AppModule extends Module {
   @override
   List<ModularRoute> get routes => [
         ChildRoute('/', child: (context, args) => const SplashPage()),
-        ChildRoute('/sign-in', child: (context, args) => const SignInPage()),
-        ChildRoute('/sign-up', child: (context, args) => const SignUpPage()),
+        ChildRoute('/sign-in',
+            child: (context, args) =>
+                const LoadingOverlayWidget(child: SignInPage())),
+        ChildRoute('/sign-up',
+            child: (context, args) =>
+                const LoadingOverlayWidget(child: SignUpPage())),
       ];
 }

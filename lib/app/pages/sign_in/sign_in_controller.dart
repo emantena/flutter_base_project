@@ -8,5 +8,7 @@ class SignInController extends BaseController {
   Future<void> login({
     required String email,
     required String password,
-  }) async {}
+  }) async {
+    var result = await _authService.signIn(email: email, password: password);
+  }
 }

@@ -1,11 +1,13 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:base_project/app/pages/sign_up/sign_up_controller.dart';
 import 'package:base_project/app/theme/app_collor.dart';
 import 'package:base_project/app/utils/size_config.dart';
 import 'package:base_project/app/utils/validator.dart';
 import 'package:base_project/app/widget/buttons/back_button_widget.dart';
-import 'package:base_project/app/widget/buttons/createButton.dart';
+import 'package:base_project/app/widget/buttons/default_button_widget.dart';
 import 'package:base_project/app/widget/headers/header_text.dart';
-import 'package:base_project/app/widget/loader.dart';
+import 'package:base_project/app/widget/loading_overlay_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -24,8 +26,6 @@ class _SignUpPageState extends State<SignUpPage> {
   final _controller = SignUpController();
 
   bool _showPassword = false;
-  bool _isLoading = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,71 +40,75 @@ class _SignUpPageState extends State<SignUpPage> {
           },
         ),
       ),
-      body: SingleChildScrollView(
-        child: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(30),
-                  child: headerText(
-                    text: "Crie sua conta",
-                    color: AppColor.primary,
-                    fontSize: 28,
+      body: LoadingOverlayWidget(
+        child: SingleChildScrollView(
+          child: SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(30),
+                    child: headerText(
+                      text: "Crie sua conta",
+                      color: AppColor.primary,
+                      fontSize: 28,
+                    ),
                   ),
-                ),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      _inputName(),
-                      _inputEmail(),
-                      _inputPassword(),
-                    ],
-                  ),
-                ),
-                !_controller.hasError
-                    ? SizedBox(
-                        height: getProportionateScreenHeight(20),
-                      )
-                    : const Text("Não foi possível criar um novo usuario"),
-                _isLoading
-                    ? loader(text: "Salvando")
-                    : createButton(
-                        context: context,
-                        func: () async {
-                          final isValid =
-                              _formKey.currentState?.validate() ?? false;
-
-                          if (!isValid) {
-                            return;
-                          }
-
-                          _formKey.currentState?.save();
-
-                          setState(() {
-                            _isLoading = true;
-                          });
-
-                          final result = await _controller.createUser(
-                            email: _emailController.text,
-                            name: _nameController.text,
-                            password: _passwordController.text,
-                          );
-
-                          setState(() {
-                            _isLoading = false;
-                          });
-
-                          if (result) {
-                            Modular.to.popAndPushNamed("/sing-in");
-                          }
-                        },
-                        labelButton: "Salvar",
-                        buttonColor: AppColor.primary,
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          _inputName(),
+                          SizedBox(
+                            height: getProportionateScreenHeight(20),
+                          ),
+                          _inputEmail(),
+                          SizedBox(
+                            height: getProportionateScreenHeight(20),
+                          ),
+                          _inputPassword(),
+                        ],
                       ),
-              ],
+                    ),
+                  ),
+                  defaultButtonWidget(
+                    context: context,
+                    func: () async {
+                      final isValid =
+                          _formKey.currentState?.validate() ?? false;
+
+                      if (!isValid) {
+                        return;
+                      }
+
+                      _formKey.currentState?.save();
+
+                      LoadingOverlayWidget.of(context).showLoader();
+
+                      final result = await _controller.createUser(
+                        email: _emailController.text,
+                        name: _nameController.text,
+                        password: _passwordController.text,
+                      );
+
+                      if (_controller.hasError) {
+                        LoadingOverlayWidget.of(context).showError(
+                          errorMessage: _controller.errorMessage,
+                        );
+                        return;
+                      }
+
+                      LoadingOverlayWidget.of(context).hideLoader();
+                      Modular.to.popAndPushNamed("/sing-in");
+                    },
+                    labelButton: "Salvar",
+                    buttonColor: AppColor.primary,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -112,114 +116,104 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Container _inputName() {
-    return Container(
-      margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.only(left: 20),
-      width: getProportionateScreenWidth(350),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: AppColor.inputBackGround,
-      ),
-      child: TextFormField(
-        controller: _nameController,
-        validator: (value) {
-          final name = value ?? '';
+  TextFormField _inputName() {
+    return TextFormField(
+      controller: _nameController,
+      validator: (value) {
+        final name = value ?? '';
 
-          if (name.isEmpty) {
-            return 'informe o nome!';
-          }
+        if (name.isEmpty) {
+          return 'informe o nome!';
+        }
 
-          return null;
-        },
-        keyboardType: TextInputType.name,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(
-            borderSide: BorderSide.none,
-          ),
-          hintText: "nome",
-          suffixIcon: Icon(
-            Icons.person_2_outlined,
-          ),
+        return null;
+      },
+      keyboardType: TextInputType.name,
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 30,
+          vertical: 20,
+        ),
+        fillColor: AppColor.inputBackGround,
+        filled: true,
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        hintText: "nome",
+        suffixIcon: const Icon(
+          Icons.person_2_outlined,
         ),
       ),
     );
   }
 
-  Container _inputEmail() {
-    return Container(
-      margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.only(left: 20),
-      width: getProportionateScreenWidth(350),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: AppColor.inputBackGround,
-      ),
-      child: TextFormField(
-        controller: _emailController,
-        validator: (value) {
-          final email = value ?? '';
+  TextFormField _inputEmail() {
+    return TextFormField(
+      controller: _emailController,
+      validator: (value) {
+        final email = value ?? '';
 
-          if (email.isEmpty) {
-            return 'informe o email!';
-          }
+        if (email.isEmpty) {
+          return 'informe o email!';
+        }
 
-          if (!Validator.isValidEmail(email)) {
-            return "email inválido";
-          }
-
-          return null;
-        },
-        keyboardType: TextInputType.emailAddress,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(
-            borderSide: BorderSide.none,
-          ),
-          hintText: "email",
-          suffixIcon: Icon(
-            Icons.mail_outline,
-          ),
+        return null;
+      },
+      keyboardType: TextInputType.emailAddress,
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 30,
+          vertical: 20,
+        ),
+        fillColor: AppColor.inputBackGround,
+        filled: true,
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        hintText: "email",
+        suffixIcon: const Icon(
+          Icons.mail_outline,
         ),
       ),
     );
   }
 
-  Container _inputPassword() {
-    return Container(
-      margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.only(left: 20),
-      width: getProportionateScreenWidth(350),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: AppColor.inputBackGround,
-      ),
-      child: TextFormField(
-        controller: _passwordController,
-        validator: (value) {
-          final password = value ?? '';
+  TextFormField _inputPassword() {
+    return TextFormField(
+      controller: _passwordController,
+      validator: (value) {
+        final password = value ?? '';
 
-          if (password.isEmpty) {
-            return 'informe a senha!';
-          }
+        if (password.isEmpty) {
+          return 'informe a senha!';
+        }
 
-          return null;
-        },
-        obscureText: !_showPassword,
-        decoration: InputDecoration(
-          border: const OutlineInputBorder(
-            borderSide: BorderSide.none,
-          ),
-          hintText: "senha",
-          suffixIcon: IconButton(
-            icon: _showPassword
-                ? const Icon(Icons.visibility_outlined)
-                : const Icon(Icons.visibility_off_outlined),
-            onPressed: () {
-              setState(() {
-                _showPassword = !_showPassword;
-              });
-            },
-          ),
+        return null;
+      },
+      obscureText: !_showPassword,
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 30,
+          vertical: 20,
+        ),
+        fillColor: AppColor.inputBackGround,
+        filled: true,
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        hintText: "senha",
+        suffixIcon: IconButton(
+          icon: _showPassword
+              ? const Icon(Icons.visibility_outlined)
+              : const Icon(Icons.visibility_off_outlined),
+          onPressed: () {
+            setState(() {
+              _showPassword = !_showPassword;
+            });
+          },
         ),
       ),
     );

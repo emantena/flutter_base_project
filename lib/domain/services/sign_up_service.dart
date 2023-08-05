@@ -2,7 +2,7 @@ import 'package:base_project/core/firebase/firebase_config.dart';
 import 'package:base_project/core/interfaces/i_api_service.dart';
 import 'package:base_project/core/model/enums/result_status.dart';
 import 'package:base_project/domain/entities/dto/create_user_dto.dart';
-import 'package:base_project/domain/entities/dto/sign_up_response_dto.dart';
+import 'package:base_project/domain/entities/dto/auth_user_response_dto.dart';
 import 'package:base_project/domain/entities/sign_up.dart';
 import 'package:base_project/domain/entities/user.dart';
 import 'package:base_project/domain/interfaces/data/i_sign_up_repository.dart';

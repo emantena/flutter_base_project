@@ -1,9 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:base_project/app/pages/sign_in/sign_in_controller.dart';
 import 'package:base_project/app/theme/app_collor.dart';
 import 'package:base_project/app/utils/size_config.dart';
-import 'package:base_project/app/widget/buttons/createButton.dart';
+import 'package:base_project/app/widget/buttons/default_button_widget.dart';
 import 'package:base_project/app/widget/headers/header_text.dart';
-import 'package:base_project/app/widget/loader.dart';
+import 'package:base_project/app/widget/loading_overlay_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -21,7 +23,6 @@ class _SignInPageState extends State<SignInPage> {
   final _controller = SignInController();
 
   bool _showPassword = false;
-  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -47,12 +48,15 @@ class _SignInPageState extends State<SignInPage> {
                           color: AppColor.primary,
                           fontSize: 30,
                         ),
-                        Text(
-                          "Faça login na sua conta",
-                          style: TextStyle(
-                            color: Theme.of(context).disabledColor,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 15),
+                          child: Text(
+                            "Faça login na sua conta",
+                            style: TextStyle(
+                              color: Theme.of(context).disabledColor,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                         Form(
@@ -60,6 +64,9 @@ class _SignInPageState extends State<SignInPage> {
                           child: Column(
                             children: [
                               _inputEmail(),
+                              SizedBox(
+                                height: getProportionateScreenHeight(20),
+                              ),
                               _inputPassword(),
                             ],
                           ),
@@ -69,41 +76,29 @@ class _SignInPageState extends State<SignInPage> {
                                 height: getProportionateScreenHeight(20),
                               )
                             : const Text("Login ou senha inválidos"),
-                        _isLoading
-                            ? loader()
-                            : createButton(
-                                context: context,
-                                func: () async {
-                                  final isValid =
-                                      _formKey.currentState?.validate() ??
-                                          false;
+                        defaultButtonWidget(
+                          context: context,
+                          func: () async {
+                            final isValid =
+                                _formKey.currentState?.validate() ?? false;
 
-                                  if (!isValid) {
-                                    return;
-                                  }
+                            if (!isValid) {
+                              return;
+                            }
+                            _formKey.currentState?.save();
 
-                                  _formKey.currentState?.save();
+                            LoadingOverlayWidget.of(context).showLoader();
 
-                                  setState(() {
-                                    _isLoading = true;
-                                  });
+                            final result = await _controller.login(
+                              email: _emailController.text,
+                              password: _passwordController.text,
+                            );
 
-                                  final result = await _controller.login(
-                                    email: _emailController.text,
-                                    password: _passwordController.text,
-                                  );
-
-                                  setState(() {
-                                    _isLoading = false;
-                                  });
-
-                                  // if (result) {
-                                  //   Modular.to.popAndPushNamed("/sing-in");
-                                  // }
-                                },
-                                labelButton: "Salvar",
-                                buttonColor: AppColor.primary,
-                              ),
+                            LoadingOverlayWidget.of(context).hideLoader();
+                          },
+                          labelButton: "Login",
+                          buttonColor: AppColor.primary,
+                        ),
                         Container(
                           margin: const EdgeInsets.only(top: 20),
                           child: GestureDetector(
@@ -160,76 +155,72 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  Container _inputEmail() {
-    return Container(
-      margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.only(left: 20),
-      width: getProportionateScreenWidth(350),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: AppColor.inputBackGround,
-      ),
-      child: TextFormField(
-        controller: _emailController,
-        validator: (value) {
-          final email = value ?? '';
+  TextFormField _inputEmail() {
+    return TextFormField(
+      controller: _emailController,
+      validator: (value) {
+        final email = value ?? '';
 
-          if (email.isEmpty) {
-            return 'informe o email!';
-          }
+        if (email.isEmpty) {
+          return 'informe o email!';
+        }
 
-          return null;
-        },
-        keyboardType: TextInputType.emailAddress,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(
-            borderSide: BorderSide.none,
-          ),
-          hintText: "email",
-          suffixIcon: Icon(
-            Icons.mail_outline,
-          ),
+        return null;
+      },
+      keyboardType: TextInputType.emailAddress,
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 30,
+          vertical: 20,
+        ),
+        fillColor: AppColor.inputBackGround,
+        filled: true,
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        hintText: "email",
+        suffixIcon: const Icon(
+          Icons.mail_outline,
         ),
       ),
     );
   }
 
-  Container _inputPassword() {
-    return Container(
-      margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.only(left: 20),
-      width: getProportionateScreenWidth(350),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: AppColor.inputBackGround,
-      ),
-      child: TextFormField(
-        controller: _passwordController,
-        validator: (value) {
-          final password = value ?? '';
+  TextFormField _inputPassword() {
+    return TextFormField(
+      controller: _passwordController,
+      validator: (value) {
+        final password = value ?? '';
 
-          if (password.isEmpty) {
-            return 'informe a senha!';
-          }
+        if (password.isEmpty) {
+          return 'informe a senha!';
+        }
 
-          return null;
-        },
-        obscureText: !_showPassword,
-        decoration: InputDecoration(
-          border: const OutlineInputBorder(
-            borderSide: BorderSide.none,
-          ),
-          hintText: "senha",
-          suffixIcon: IconButton(
-            icon: _showPassword
-                ? const Icon(Icons.visibility_outlined)
-                : const Icon(Icons.visibility_off_outlined),
-            onPressed: () {
-              setState(() {
-                _showPassword = !_showPassword;
-              });
-            },
-          ),
+        return null;
+      },
+      obscureText: !_showPassword,
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 30,
+          vertical: 20,
+        ),
+        fillColor: AppColor.inputBackGround,
+        filled: true,
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        hintText: "senha",
+        suffixIcon: IconButton(
+          icon: _showPassword
+              ? const Icon(Icons.visibility_outlined)
+              : const Icon(Icons.visibility_off_outlined),
+          onPressed: () {
+            setState(() {
+              _showPassword = !_showPassword;
+            });
+          },
         ),
       ),
     );
